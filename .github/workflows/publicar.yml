@@ -1,0 +1,45 @@
+# Construye el sitio estático (npm run build → sitio/) y lo publica en la rama gh-pages (GitHub Pages).
+name: Publicar sitio en GitHub Pages
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: publicar-sitio
+  cancel-in-progress: true
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Instalar dependencias (versiones fijas en package.json)
+        run: npm install --no-audit --no-fund --package-lock=false
+      - name: Construir sitio estático
+        run: |
+          set -euo pipefail
+          npm run build
+          test -f sitio/index.html && test -f sitio/404.html
+          touch sitio/.nojekyll
+          # Seguridad: no publicar archivos privados ni binarios por error
+          if find sitio -iname '*.db' -o -iname 'master_keys*' -o -iname 'CREDENCIALES*' -o -iname '*.log' -o -iname '*.png' -o -iname '*.woff*' | grep -q .; then
+            echo "Archivo no permitido en sitio/"; exit 1
+          fi
+          ls -laR sitio
+          sha256sum sitio/index.html sitio/assets/*
+      - name: Publicar en la rama gh-pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          cd sitio
+          git init -q -b gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Publicar sitio desde ${GITHUB_SHA::7}"
+          git push -f "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" gh-pages
