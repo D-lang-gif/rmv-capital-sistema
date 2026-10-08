@@ -1,0 +1,14 @@
+# Nunca subir
+privado/
+*.db
+*.db-*
+*.log
+master_keys*.json
+CREDENCIALES*.txt
+.env
+.env.*
+api/.venv/
+__pycache__/
+node_modules/
+# Se genera con npm run build (lo publica el workflow)
+sitio/

@@ -1,0 +1,261 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/inter/700.css";
+@import "@fontsource/inter/800.css";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace;
+
+  --color-bg: #0a0f1f;
+  --color-bg-elevated: #0d1427;
+  --color-surface: #111a30;
+  --color-surface-2: #18233d;
+  --color-fg: #e8edf5;
+  --color-fg-muted: #9ba8bd;
+  --color-fg-subtle: #66748c;
+  --color-accent: #00d4aa;
+  --color-accent-fg: #03161a;
+  --color-border: rgb(255 255 255 / 0.08);
+  --color-border-strong: rgb(255 255 255 / 0.16);
+  --color-bitcoin: #f5a14a;
+  --color-success: #3dcc8a;
+  --color-danger: #e25b6a;
+  --color-warning: #e0b15c;
+  --color-ring: #00d4aa;
+  --color-accent-2: #00a3e0;
+
+  --color-background: #0a0f1f;
+  --color-foreground: #e8edf5;
+  --color-card: #111a30;
+  --color-card-foreground: #e8edf5;
+  --color-popover: #111a30;
+  --color-popover-foreground: #e8edf5;
+  --color-primary: #00d4aa;
+  --color-primary-foreground: #03161a;
+  --color-secondary: #18233d;
+  --color-secondary-foreground: #e8edf5;
+  --color-muted: #18233d;
+  --color-muted-foreground: #9ba8bd;
+  --color-accent-foreground: #03161a;
+  --color-destructive: #e25b6a;
+  --color-input: #18233d;
+  --color-chart-1: #00d4aa;
+
+  --radius: 0.75rem;
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+
+  --shadow-border: 0 0 0 1px rgb(255 255 255 / 0.06);
+  --shadow-border-hover: 0 0 0 1px rgb(0 212 170 / 0.3);
+
+  --ease-smooth-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html,
+  body,
+  #app {
+    min-height: 100%;
+    color: var(--color-fg);
+  }
+
+  html {
+    background: #0a0f1f;
+  }
+
+  body {
+    background: linear-gradient(135deg, #0a0f1f 0%, #1a1f2f 50%, #0d1b3e 100%) fixed;
+  }
+
+  body {
+    font-family: var(--font-sans);
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--color-accent) 35%, transparent);
+    color: var(--color-fg);
+  }
+}
+
+@layer components {
+  .nexus-grid {
+    background-color: transparent;
+    background-image:
+      linear-gradient(to right, rgb(0 212 170 / 0.035) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(0 212 170 / 0.035) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+
+  .nexus-vignette {
+    background:
+      radial-gradient(1200px 600px at 50% -10%, rgb(0 212 170 / 0.08), transparent 55%),
+      radial-gradient(800px 400px at 100% 100%, rgb(0 212 170 / 0.04), transparent 50%);
+  }
+
+  .hairline {
+    box-shadow: var(--shadow-border);
+  }
+
+  /* Tarjeta de vidrio (diseño RMV Bank) */
+  .glass {
+    background: rgb(255 255 255 / 0.05);
+    border: 1px solid rgb(255 255 255 / 0.08);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    transition: border-color 0.25s ease, transform 0.25s ease;
+  }
+  .glass:hover {
+    border-color: rgb(0 212 170 / 0.3);
+  }
+
+  .text-gradient {
+    background: linear-gradient(90deg, #00d4aa, #00a3e0);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .btn-shimmer {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(90deg, #00d4aa, #00a3e0);
+    color: #03161a;
+    font-weight: 600;
+  }
+  .btn-shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg, transparent 20%, rgb(255 255 255 / 0.45) 50%, transparent 80%);
+    transform: translateX(-100%);
+    animation: rmv-shimmer 2.6s ease-in-out infinite;
+    pointer-events: none;
+  }
+  .btn-shimmer:hover {
+    filter: brightness(1.08);
+  }
+
+  .dot-online {
+    position: relative;
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 9999px;
+    background: #22c55e;
+  }
+  .dot-online::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    background: #22c55e;
+    animation: rmv-pulse 1.8s ease-out infinite;
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@keyframes rmv-shimmer {
+  0% { transform: translateX(-100%); }
+  60%, 100% { transform: translateX(100%); }
+}
+
+@keyframes rmv-pulse {
+  0% { transform: scale(1); opacity: 0.7; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+
+/* Ventanas emergentes estilo SweetAlert2 con el tema RMV */
+.swal2-popup.rmv-pop {
+  background: #111a30;
+  color: #e8edf5;
+  border: 1px solid rgb(0 212 170 / 0.25);
+  border-radius: 16px;
+  font-family: var(--font-sans);
+}
+.swal2-popup.rmv-pop .swal2-title {
+  color: #e8edf5;
+  font-size: 1.25rem;
+}
+.swal2-popup.rmv-pop .swal2-html-container {
+  color: #9ba8bd;
+  font-size: 0.9rem;
+}
+.swal2-popup.rmv-pop .swal2-confirm {
+  background: linear-gradient(90deg, #00d4aa, #00a3e0);
+  color: #03161a;
+  font-weight: 600;
+  border-radius: 10px;
+}
+.swal2-popup.rmv-pop .swal2-cancel {
+  background: #18233d;
+  color: #e8edf5;
+  border-radius: 10px;
+}
+.rmv-det {
+  margin-top: 0.5rem;
+  text-align: left;
+  border-radius: 10px;
+  background: rgb(255 255 255 / 0.04);
+  padding: 0.5rem 0.75rem;
+}
+.rmv-det div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid rgb(255 255 255 / 0.06);
+}
+.rmv-det div:last-child {
+  border-bottom: 0;
+}
+.rmv-det span:last-child {
+  color: #e8edf5;
+  text-align: right;
+  word-break: break-all;
+}
+.rmv-det .rmv-folio {
+  font-family: var(--font-mono);
+  color: #00d4aa;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-shimmer::after,
+  .dot-online::after {
+    animation: none !important;
+  }
+  .motion-safe-only {
+    animation: none !important;
+    transition: none !important;
+  }
+}
