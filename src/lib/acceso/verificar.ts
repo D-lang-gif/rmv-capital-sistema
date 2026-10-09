@@ -19,7 +19,20 @@ function igual(a: string, b: string): boolean {
   return dif === 0;
 }
 
-export async function verificarAcceso(usuario: string, clave: string): Promise<boolean> {
+/**
+ * Limpia lo que suelen agregar los teclados de teléfono o el copiar/pegar:
+ * espacios al inicio/final, espacio duro y guiones tipográficos (‐ ‑ ‒ – — −) en lugar de "-".
+ */
+export function limpiarClave(clave: string): string {
+  return clave
+    .normalize("NFC")
+    .replace(/[\u2010-\u2015\u2212]/g, "-")
+    .replace(/\u00a0/g, " ")
+    .trim();
+}
+
+export async function verificarAcceso(usuario: string, claveEscrita: string): Promise<boolean> {
+  const clave = limpiarClave(claveEscrita);
   if (typeof crypto === "undefined" || !crypto.subtle) {
     throw new Error("sin-webcrypto");
   }
