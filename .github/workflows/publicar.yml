@@ -26,9 +26,11 @@ jobs:
           test -f sitio/index.html && test -f sitio/404.html
           touch sitio/.nojekyll
           # Seguridad: no publicar archivos privados ni binarios por error
-          if find sitio -iname '*.db' -o -iname 'master_keys*' -o -iname 'CREDENCIALES*' -o -iname '*.log' -o -iname '*.png' -o -iname '*.woff*' | grep -q .; then
+          if find sitio -iname '*.db' -o -iname 'master_keys*' -o -iname 'CREDENCIALES*' -o -iname '*.log' -o -iname '*.png' -o -iname '*.woff*' -o -iname '*.map' | grep -q .; then
             echo "Archivo no permitido en sitio/"; exit 1
           fi
+          # El JS publicado debe llevar el aviso de derechos de autor (señal de que se ofuscó)
+          for f in sitio/assets/*.js; do head -c 200 "$f" | grep -q 'Raúl Muñoz Villa' || { echo "Sin ofuscar: $f"; exit 1; }; done
           ls -laR sitio
           sha256sum sitio/index.html sitio/assets/*
       - name: Publicar en la rama gh-pages

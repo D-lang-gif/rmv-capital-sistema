@@ -118,6 +118,9 @@ export function LoginScreen() {
         <p className="mt-8 text-center font-mono text-[11px] tracking-wide text-fg-subtle">
           RMV Capital Bank © 2026 · v{VERSION}
         </p>
+        <p className="mt-1 text-center text-[11px] tracking-wide text-fg-subtle" data-testid="autor">
+          Autor: Raúl Muñoz Villa · Todos los derechos reservados
+        </p>
       </main>
     </div>
   );

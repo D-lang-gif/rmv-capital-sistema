@@ -2,6 +2,8 @@
 
 **Sitio en vivo:** https://d-lang-gif.github.io/rmv-capital-sistema/
 
+**Autor: Raúl Muñoz Villa** · © 2026 · Todos los derechos reservados (ver [LICENSE](LICENSE)).
+
 Sistema web de **Raúl Muñoz Villa** que junta en un solo lugar, con un solo inicio de sesión:
 
 1. **Tesorería Bitcoin**: Mesa (precio BTC, altura de bloque, comisiones y gráfica de 30 días en vivo), Libro, Anotaciones, Explorador, Observatorio e Identidad.
@@ -27,6 +29,8 @@ Sistema web de **Raúl Muñoz Villa** que junta en un solo lugar, con un solo in
 | `vite.pages.config.ts` | Configuración del build para `https://d-lang-gif.github.io/rmv-capital-sistema/`. |
 | `.github/workflows/publicar.yml` | En cada cambio a `main`: `npm install`, `npm run build` (carpeta `sitio/`) y publica en la rama `gh-pages`. |
 | `api/` | Servidor opcional **RMV CORP · API MAESTRA v3.0** (Flask), sin llaves ni base de datos. |
+| `herramientas/ofuscar.mjs` | Paso final del build: ofusca el JavaScript publicado y le pone el aviso de derechos de autor. |
+| `LICENSE` | Licencia propietaria: © 2026 Raúl Muñoz Villa, todos los derechos reservados. |
 
 ### Cómo funciona el sitio en GitHub Pages
 
@@ -41,6 +45,10 @@ Sistema web de **Raúl Muñoz Villa** que junta en un solo lugar, con un solo in
   página se puede recargar sin perder la sección. `404.html` es una copia de la página principal, por si
   alguien abre una ruta sin `#`.
 - No se publican archivos binarios: la fuente Inter va incrustada en el CSS y los íconos son SVG.
+- **JavaScript minificado y ofuscado, sin mapas de código**: al construir, Vite minifica y
+  `herramientas/ofuscar.mjs` (javascript-obfuscator) ofusca los `.js` publicados y les agrega el aviso de
+  derechos de autor. Nota honesta: cualquier código que corre en el navegador se puede volver **difícil**
+  de leer, pero no imposible; la protección real es la licencia y no publicar secretos.
 
 ## Servidor opcional: API MAESTRA v3.0 (carpeta `api/`)
 
@@ -109,5 +117,11 @@ npm run preview      # abre http://127.0.0.1:8099/rmv-capital-sistema/
 
 Las versiones de las librerías están fijas en `package.json`.
 
+## Licencia
+
+Software propietario. © 2026 Raúl Muñoz Villa. Todos los derechos reservados.
+Que el repositorio sea público no da permiso de copiarlo, modificarlo ni reutilizarlo: para cualquier uso
+se necesita permiso escrito del autor. Texto completo en [LICENSE](LICENSE).
+
 ---
-RMV Capital Bank © 2026 · RAÚL MUÑOZ VILLA
+RMV Capital Bank © 2026 · Autor: RAÚL MUÑOZ VILLA
