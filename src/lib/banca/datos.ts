@@ -62,7 +62,7 @@ export const TARJETAS: Tarjeta[] = [
     id: "mc-platinum",
     nombre: "MASTERCARD PLATINUM",
     red: "MASTERCARD",
-    ultimos4: "0791",
+    ultimos4: "7861",
     saldo: 137500.25,
     color: "#a855f7", // morado
     vence: "12/30",
