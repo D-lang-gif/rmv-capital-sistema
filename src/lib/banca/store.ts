@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { SALDOS } from "./datos";
 
-export type TipoMovimiento = "SPEI" | "PAGO" | "RECARGA" | "TARJETA";
+export type TipoMovimiento = "SPEI" | "PAGO" | "RECARGA" | "TARJETA" | "INTERNA";
 
 export type Movimiento = {
   folio: string;
@@ -12,6 +12,8 @@ export type Movimiento = {
   /** Negativo = salida. 0 = solicitud sin cargo. */
   monto: number;
   fecha: string;
+  /** Usuarios internos involucrados (para la vista "Mi cuenta"). */
+  usuarioIds?: string[];
 };
 
 export type BancaTab =
@@ -22,7 +24,8 @@ export type BancaTab =
   | "recargas"
   | "token"
   | "certificados"
-  | "servidor";
+  | "servidor"
+  | "usuarios";
 
 type BancaState = {
   tab: BancaTab;

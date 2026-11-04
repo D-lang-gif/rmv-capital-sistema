@@ -16,8 +16,11 @@
 export const TITULAR = "RAÚL MUÑOZ VILLA";
 
 /** Nombre del portal (encabezado de la sección Banca). */
-export const NOMBRE_BANCO = "RMV Bank";
-export const LEMA_BANCO = "Banca Digital Soberana";
+export const NOMBRE_BANCO = "RMV Capital Bank";
+export const LEMA_BANCO = "Banca Soberana";
+/** Firma visible en encabezado / pie de Banca. */
+export const FIRMA_BANCA = "RMV Bank Soberano";
+export const FRASE_BANCA = "Soñar un futuro no es delito, es expresión en el mundo material.";
 export const VERSION_BANCO = "4.0";
 
 /** Saldos del tablero (Dashboard). */
