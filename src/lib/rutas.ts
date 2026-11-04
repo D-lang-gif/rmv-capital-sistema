@@ -2,7 +2,7 @@
  * Rutas con "#" (hash) para que cada sección tenga su propia dirección y
  * funcione al recargar la página, también en un sitio estático (GitHub Pages).
  *   #/mesa  #/libro  #/anotaciones  #/explorador  #/observatorio  #/identidad
- *   #/banca/dashboard  #/banca/spei  … #/banca/servidor   #/apy
+ *   #/banca/dashboard  #/banca/spei  … #/banca/servidor   #/apy  #/testimonio
  */
 import { useEffect } from "react";
 import type { NexusView } from "@/lib/nexus/types";
@@ -18,6 +18,7 @@ const VISTAS: Record<NexusView, string> = {
   identity: "identidad",
   banca: "banca",
   apy: "apy",
+  testimonio: "testimonio",
 };
 const PESTANAS: BancaTab[] = [
   "dashboard",

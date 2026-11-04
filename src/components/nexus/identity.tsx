@@ -1,9 +1,10 @@
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { FIRMA, OWNER, PATENTE, SELLO, TITLE, VERSION } from "@/lib/nexus/config";
+import { FIRMA, OWNER, PATENTE, SELLO, VERSION } from "@/lib/nexus/config";
 import { useNexusStore } from "@/lib/nexus/store";
 import { Panel } from "./shared";
 import { NexusMark } from "./mark";
+import { MARCA } from "./marca";
 
 export function IdentityView() {
   const wallets = useNexusStore((s) => s.wallets);
@@ -47,8 +48,8 @@ export function IdentityView() {
             <NexusMark size={28} />
           </div>
           <div className="min-w-0">
-            <p className="text-[11px] tracking-[0.2em] text-accent uppercase">{TITLE}</p>
-            <h3 className="font-display text-2xl font-medium">{OWNER}</h3>
+            <p className="text-[11px] tracking-[0.2em] text-accent uppercase">Banca Soberana</p>
+            <h3 className="font-display text-2xl font-medium">{MARCA}</h3>
             <p className="mt-1 text-sm text-fg-muted">
               Centro de comando de tesorería. Lectura de cadena, no banco emisor,
               no SWIFT operativo.
