@@ -187,8 +187,9 @@ let escuchas: Unsubscribe[] = [];
 
 export function mensajeError(e: unknown): string {
   const code = (e as { code?: string })?.code ?? "";
-  if (code.includes("permission-denied")) return "La nube rechazó la operación (revisa que las reglas de Firestore estén publicadas).";
-  if (code.includes("unavailable") || code.includes("network")) return "Sin conexión con la nube. Intenta de nuevo.";
+  if (code.includes("permission-denied")) return "La nube rechazó la operación: la sesión no tiene permiso de administrador. Cierra sesión y entra de nuevo como soberano (y verifica que las reglas de Firestore estén publicadas).";
+  if (code.includes("unavailable") || code.includes("network")) return e instanceof Error && e.message.startsWith("La nube") ? e.message : "Sin conexión con la nube. Intenta de nuevo.";
+  if (code.includes("unauthenticated")) return "La sesión expiró. Inicia sesión de nuevo como soberano.";
   if (code.includes("email-already-in-use")) return "Ese usuario ya existe.";
   if (code.includes("weak-password")) return "La contraseña es demasiado débil.";
   if (e instanceof Error && e.message && !code) return e.message;

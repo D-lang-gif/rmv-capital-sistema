@@ -81,18 +81,23 @@ export function StpSpei() {
       const o = await guardarOrden(armarOrden({ ...f, monto, referenciaNumerica: refNum }, cfg, clave));
       setOrdenes((p) => [o, ...p]);
       setF(ORDEN_VACIA); setClave(nuevaClaveRastreo()); setRefNum(nuevaReferencia());
+      void popupAviso("Orden SPEI registrada", `Clave de rastreo ${o.claveRastreo} · ${fmtMXN(o.monto)} a ${o.nombreBeneficiario}. Estado: PENDIENTE_FIRMA.${cfg.relay ? " Usa «Enviar a STP» para transmitirla." : " Se enviará a STP en cuanto se conecte el relay de STP."}`, "info");
     } catch (e) { void popupAviso("STP", mensajeError(e), "error"); }
     finally { setBusy(false); }
   }
 
   async function enviar(o: OrdenStp) {
-    if (!cfg.relay) return;
+    if (!cfg.relay) {
+      void popupAviso("Orden guardada", `La orden ${o.claveRastreo} quedó guardada como PENDIENTE_FIRMA. Se enviará a STP en cuanto se conecte el relay de STP (URL del relay en Configuración).`, "info");
+      return;
+    }
     setBusy(true);
     try {
       const r = await enviarAStp(cfg.relay, o);
       setOrdenes((p) => p.map((x) => (x.claveRastreo === r.claveRastreo ? r : x)));
-      void popupAviso("Enviar a STP", r.stp_id ? `Orden registrada en STP con id ${r.stp_id}.` : `Respuesta: ${r.estado}`, r.stp_id ? "info" : "warning");
-    } finally { setBusy(false); }
+      void popupAviso("Enviar a STP", r.stp_id ? `Orden registrada en STP con id ${r.stp_id}.` : `STP no confirmó la orden. Estado: ${r.estado}.`, r.stp_id ? "info" : "warning");
+    } catch (e) { void popupAviso("Enviar a STP", mensajeError(e), "error"); }
+    finally { setBusy(false); }
   }
 
   async function importar(file: File | undefined) {
@@ -197,7 +202,7 @@ export function StpSpei() {
                     <td className="pr-3"><span className={cn("rounded-md px-2 py-0.5 text-xs font-semibold", o.stp_id ? "bg-[rgba(0,212,170,0.15)] text-accent" : "bg-[rgba(212,175,55,0.15)] text-[#d4af37]")}>{o.estado}</span>{o.stp_id && <div className="mt-1 text-[11px] text-fg-muted">id STP {o.stp_id}</div>}</td>
                     <td className="pr-3 text-xs text-fg-muted">{fmtFecha(o.creado_at)}</td>
                     <td className="py-2">
-                      <button type="button" disabled={!cfg.relay || busy || !!o.stp_id} title={cfg.relay ? "" : "Requiere relay configurado"} onClick={() => void enviar(o)} className="rounded-lg border border-border px-2.5 py-1 text-xs whitespace-nowrap enabled:hover:border-[rgba(0,212,170,0.4)] disabled:opacity-40">Enviar a STP</button>
+                      <button type="button" disabled={busy || !!o.stp_id} title={cfg.relay ? "Enviar a STP" : "Pendiente de relay STP: la orden queda guardada"} onClick={() => void enviar(o)} className="rounded-lg border border-border px-2.5 py-1 text-xs whitespace-nowrap enabled:hover:border-[rgba(0,212,170,0.4)] disabled:opacity-40">Enviar a STP</button>
                     </td>
                   </tr>
                 ))}

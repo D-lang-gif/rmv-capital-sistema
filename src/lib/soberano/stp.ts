@@ -70,7 +70,7 @@ export async function guardarConfig(c: ConfigStp): Promise<void> {
     relay: c.relay.trim().replace(/\/+$/, ""),
     actualizado_at: ahora(),
   };
-  await setDoc(refStp(), { config: limpia }, { merge: true });
+  await conTiempo(setDoc(refStp(), { config: limpia }, { merge: true }));
 }
 
 /* ─────────── Órdenes (registraOrden) ─────────── */
@@ -152,9 +152,14 @@ export function armarOrden(n: NuevaOrden, cfg: ConfigStp, claveRastreo: string):
   return { ...base, cadenaOriginal: cadenaOriginal(base) };
 }
 
+/** Evita esperas infinitas cuando la nube no responde (sin sesión o sin red). */
+function conTiempo<T>(p: Promise<T>, ms = 15000): Promise<T> {
+  return Promise.race([p, new Promise<T>((_, rej) => setTimeout(() => rej(Object.assign(new Error("La nube no respondió. Revisa tu conexión e inicia sesión de nuevo como soberano."), { code: "unavailable" })), ms))]);
+}
+
 export async function guardarOrden(o: ReturnType<typeof armarOrden>): Promise<OrdenStp> {
   const r: OrdenStp = { ...o, estado: "PENDIENTE_FIRMA", stp_id: null, respuesta: null, creado_at: ahora(), enviado_at: null };
-  await setDoc(doc(colOrdenes(), r.claveRastreo), r);
+  await conTiempo(setDoc(doc(colOrdenes(), r.claveRastreo), r));
   return r;
 }
 
@@ -178,7 +183,7 @@ export async function enviarAStp(relay: string, o: OrdenStp): Promise<OrdenStp> 
   }
   const id = cuerpo.id ?? (cuerpo.resultado as { id?: unknown } | undefined)?.id;
   const act = { estado: nuevoEstado, stp_id: id != null ? String(id) : null, respuesta: JSON.stringify(cuerpo).slice(0, 2000), enviado_at: ahora() };
-  await setDoc(doc(colOrdenes(), o.claveRastreo), act, { merge: true });
+  await conTiempo(setDoc(doc(colOrdenes(), o.claveRastreo), act, { merge: true }));
   return { ...o, ...act };
 }
 
