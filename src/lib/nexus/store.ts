@@ -1,16 +1,23 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { cerrarSesionNube } from "@/lib/acceso/sesion";
+import { useUsuariosStore } from "@/lib/banca/usuarios";
 import { SEED_WALLETS, SEED_WHALES } from "./config";
 import type { LedgerEntry, NexusView, WatchedWallet, WhaleEntry } from "./types";
 
+export type Rol = "admin" | "usuario";
+
 type NexusState = {
   authed: boolean;
+  /** admin = "soberano"; usuario = registrado en Banca › Usuarios. */
+  rol: Rol;
+  usuarioId: string | null;
   view: NexusView;
   wallets: WatchedWallet[];
   journal: LedgerEntry[];
   whales: WhaleEntry[];
-  /** Se llama solo después de verificar la contraseña (PBKDF2) en login-screen. */
-  entrar: () => void;
+  /** Se llama solo después de verificar el acceso (PBKDF2 local / Firebase Auth) en login-screen. */
+  entrar: (rol?: Rol, usuarioId?: string | null) => void;
   logout: () => void;
   setView: (view: NexusView) => void;
   addWallet: (wallet: Omit<WatchedWallet, "id" | "created">) => { ok: true } | { ok: false; error: string };
@@ -30,25 +37,29 @@ export const useNexusStore = create<NexusState>()(
   persist(
     (set, get) => ({
       authed: false,
+      rol: "admin",
+      usuarioId: null,
       view: "overview",
       wallets: SEED_WALLETS,
       journal: [],
       whales: SEED_WHALES,
-      entrar: () => {
+      entrar: (rol = "admin", usuarioId = null) => {
         try {
-          sessionStorage.setItem(SESSION_KEY, "1");
+          sessionStorage.setItem(SESSION_KEY, rol === "admin" ? "1" : `u:${usuarioId}`);
         } catch {
           /* sin almacenamiento */
         }
-        set({ authed: true, view: "overview" });
+        set({ authed: true, rol, usuarioId: rol === "admin" ? null : usuarioId, view: "overview" });
       },
       logout: () => {
+        useUsuariosStore.getState().detener();
+        void cerrarSesionNube();
         try {
           sessionStorage.removeItem(SESSION_KEY);
         } catch {
           /* sin almacenamiento */
         }
-        set({ authed: false, view: "overview" });
+        set({ authed: false, rol: "admin", usuarioId: null, view: "overview" });
       },
       setView: (view) => set({ view }),
       addWallet: (wallet) => {

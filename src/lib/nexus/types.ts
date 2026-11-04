@@ -6,7 +6,8 @@ export type NexusView =
   | "whales"
   | "identity"
   | "banca"
-  | "apy";
+  | "apy"
+  | "testimonio";
 
 export type WalletRole = "treasury" | "watch";
 
