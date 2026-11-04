@@ -1,11 +1,13 @@
 import { FormEvent, useState } from "react";
-import { Eye, EyeOff, Loader2, LogIn } from "lucide-react";
+import { BookOpenText, Eye, EyeOff, Loader2, LogIn, ShieldCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { verificarAcceso } from "@/lib/acceso/verificar";
-import { OWNER, VERSION } from "@/lib/nexus/config";
+import { popupAviso } from "@/lib/banca/popup";
+import { iniciarSesion } from "@/lib/acceso/sesion";
+import { VERSION } from "@/lib/nexus/config";
 import { useNexusStore } from "@/lib/nexus/store";
-import { NexusMark } from "./mark";
+import { LOGO_BANNER, MARCA } from "./marca";
+import { TestimonioView } from "./testimonio";
 
 export function LoginScreen() {
   const entrar = useNexusStore((s) => s.entrar);
@@ -14,6 +16,17 @@ export function LoginScreen() {
   const [ver, setVer] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [testimonio, setTestimonio] = useState(() => typeof location !== "undefined" && location.hash === "#/testimonio");
+
+  function verTestimonio(v: boolean) {
+    setTestimonio(v);
+    try {
+      history.replaceState(null, "", v ? "#/testimonio" : location.pathname + location.search);
+    } catch {
+      /* sin historial */
+    }
+    window.scrollTo(0, 0);
+  }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -24,13 +37,16 @@ export function LoginScreen() {
     setBusy(true);
     setError(null);
     try {
-      const ok = await verificarAcceso(user, pass);
-      if (ok) {
+      const r = await iniciarSesion(user, pass);
+      if (r.ok) {
         setPass("");
-        entrar();
+        if (r.rol === "admin") {
+          entrar("admin");
+          if (r.aviso) void popupAviso("Nube sin conexión", r.aviso, "info");
+        } else entrar("usuario", r.uid);
       } else {
-        await new Promise((r) => setTimeout(r, 350));
-        setError("Usuario o contraseña incorrectos.");
+        await new Promise((res) => setTimeout(res, 350));
+        setError(r.error);
       }
     } catch {
       setError("Este navegador no puede verificar la contraseña (abre la página con https o localhost).");
@@ -39,22 +55,36 @@ export function LoginScreen() {
     }
   }
 
+  if (testimonio) {
+    return (
+      <div className="nexus-grid nexus-vignette relative flex min-h-dvh flex-col">
+        <main className="flex w-full flex-1 flex-col px-5 py-10">
+          <TestimonioView onVolver={() => verTestimonio(false)} />
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="nexus-grid nexus-vignette relative flex min-h-dvh flex-col">
       <div className="h-px w-full bg-gradient-to-r from-[#00d4aa] to-[#00a3e0] opacity-70" />
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-5 py-12">
         <div className="mb-8 flex flex-col items-center text-center">
-          <NexusMark size={44} />
-          <p className="mt-6 flex items-center gap-2 text-[11px] font-medium tracking-[0.28em] text-fg-muted uppercase">
-            <span className="dot-online" aria-hidden="true" /> Online
-          </p>
-          <h1 className="mt-3 text-4xl font-extrabold tracking-tight sm:text-5xl">
-            <span className="text-gradient">RMV Capital</span>
+          <div className="w-full overflow-hidden rounded-2xl border border-[#e0b15c]/40 shadow-[0_0_40px_rgba(224,177,92,0.18)]">
+            <img src={LOGO_BANNER} alt="RMV Capital Soberano" className="block h-auto w-full" data-testid="logo-banner" />
+          </div>
+          <span className="mt-5 inline-flex items-center gap-1.5 rounded-full border border-[#e0b15c]/50 bg-[#e0b15c]/10 px-3 py-1 text-[10px] font-semibold tracking-[0.24em] text-[#e0b15c]">
+            <ShieldCheck className="size-3" /> BANCA SOBERANA
+          </span>
+          <h1 className="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl">
+            <span className="text-gradient">RMV Capital Bank · Banca Soberana</span>
           </h1>
-          <p className="mt-3 max-w-sm text-sm text-fg-muted">
-            Tesorería Bitcoin · Banca Digital Soberana · APY Fast
+          <p className="mt-3 max-w-sm text-sm text-[#f3d28b] italic">
+            Soñar un futuro no es delito, es expresión en el mundo material.
           </p>
-          <p className="mt-1 text-xs tracking-[0.2em] text-fg-subtle uppercase">{OWNER}</p>
+          <p className="mt-2 flex items-center gap-2 text-xs tracking-[0.2em] text-fg-subtle uppercase">
+            <span className="dot-online" aria-hidden="true" /> {MARCA}
+          </p>
         </div>
 
         <form onSubmit={onSubmit} className="glass rounded-2xl p-5" autoComplete="on">
@@ -115,11 +145,20 @@ export function LoginScreen() {
           </div>
         </form>
 
+        <button
+          type="button"
+          onClick={() => verTestimonio(true)}
+          className="mt-5 flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-[#e0b15c]/50 text-sm text-[#e0b15c] hover:bg-[#e0b15c]/10"
+          data-testid="ver-testimonio"
+        >
+          <BookOpenText className="size-4" /> Leer el Testimonio
+        </button>
+
         <p className="mt-8 text-center font-mono text-[11px] tracking-wide text-fg-subtle">
           RMV Capital Bank © 2026 · v{VERSION}
         </p>
         <p className="mt-1 text-center text-[11px] tracking-wide text-fg-subtle" data-testid="autor">
-          Autor: Raúl Muñoz Villa · Todos los derechos reservados
+          {MARCA} · Todos los derechos reservados
         </p>
       </main>
     </div>

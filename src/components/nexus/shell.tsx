@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  ScrollText,
   Search,
   Wallet,
   Waves,
@@ -14,12 +15,17 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { OWNER, TITLE, VERSION } from "@/lib/nexus/config";
+import { VERSION } from "@/lib/nexus/config";
 import { formatHeight, formatUsd } from "@/lib/nexus/format";
 import { useNetwork } from "@/lib/nexus/queries";
 import { SESSION_KEY, useNexusStore } from "@/lib/nexus/store";
 import { CREDENCIAL } from "@/lib/acceso/credencial";
 import { BancaView } from "@/components/banca/banca";
+import { MiCuentaApp } from "@/components/banca/mi-cuenta";
+import { useUsuariosStore } from "@/lib/banca/usuarios";
+import { auth, db } from "@/lib/firebase/app";
+import { signOut } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 import { ApyFastView } from "@/components/apy/apy-fast";
 import type { NexusView } from "@/lib/nexus/types";
 import { useRutaHash } from "@/lib/rutas";
@@ -28,7 +34,8 @@ import { IdentityView } from "./identity";
 import { JournalView } from "./journal";
 import { LiveRail } from "./live-rail";
 import { LoginScreen } from "./login-screen";
-import { NexusMark } from "./mark";
+import { LOGO_ESCUDO, MARCA } from "./marca";
+import { TestimonioView } from "./testimonio";
 import { OverviewView } from "./overview";
 import { WalletsView } from "./wallets";
 import { WhalesView } from "./whales";
@@ -42,24 +49,53 @@ const NAV: Array<{ id: NexusView; label: string; icon: typeof LayoutDashboard }>
   { id: "identity", label: "Identidad", icon: Fingerprint },
   { id: "banca", label: "Banca", icon: Landmark },
   { id: "apy", label: "APY Fast", icon: Zap },
+  { id: "testimonio", label: "Testimonio", icon: ScrollText },
 ];
 
 export function NexusApp() {
   const authed = useNexusStore((s) => s.authed);
+  const rol = useNexusStore((s) => s.rol);
+  const usuarioId = useNexusStore((s) => s.usuarioId);
   const [ready, setReady] = useState(false);
   useEffect(() => {
     // Mantiene la sesión al recargar la pestaña (se borra al cerrar el navegador o con "Salir").
-    try {
-      if (sessionStorage.getItem(SESSION_KEY) === "1" && !useNexusStore.getState().authed) {
-        useNexusStore.setState({ authed: true });
+    let vivo = true;
+    (async () => {
+      try {
+        await auth.authStateReady();
+        const ses = sessionStorage.getItem(SESSION_KEY);
+        if (!useNexusStore.getState().authed) {
+          if (ses === "1") useNexusStore.setState({ authed: true, rol: "admin", usuarioId: null });
+          else if (ses?.startsWith("u:")) {
+            const uid = ses.slice(2);
+            // Solo si la sesión de nube es la misma y el usuario sigue activo (no dado de baja).
+            const perfil = auth.currentUser?.uid === uid ? await getDoc(doc(db, "usuarios", uid)).catch(() => null) : null;
+            if (perfil?.exists() && perfil.data().estado === "activa") {
+              useNexusStore.setState({ authed: true, rol: "usuario", usuarioId: uid });
+            } else {
+              sessionStorage.removeItem(SESSION_KEY);
+              await signOut(auth).catch(() => {});
+            }
+          }
+        }
+      } catch {
+        /* sin almacenamiento */
       }
-    } catch {
-      /* sin almacenamiento */
-    }
-    setReady(true);
+      if (vivo) setReady(true);
+    })();
+    return () => {
+      vivo = false;
+    };
   }, []);
+  // Escucha en vivo de Firestore según el rol de la sesión.
+  useEffect(() => {
+    if (!authed) return;
+    useUsuariosStore.getState().iniciar(rol, usuarioId);
+    return () => useUsuariosStore.getState().detener();
+  }, [authed, rol, usuarioId]);
   if (!ready) return <div className="min-h-dvh" />;
   if (!authed) return <LoginScreen />;
+  if (rol === "usuario") return <MiCuentaApp />;
   return <NexusShell />;
 }
 
@@ -94,7 +130,7 @@ function NexusShell() {
         >
           <Menu />
         </Button>
-        <NexusMark size={22} />
+        <img src={LOGO_ESCUDO} alt="RMV" width={36} height={36} className="size-9 rounded-md border border-[#e0b15c]/40" />
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-2">
             <span className="text-gradient text-lg leading-none font-extrabold tracking-tight">
@@ -109,7 +145,7 @@ function NexusShell() {
             </span>
           </div>
           <p className="truncate text-[11px] text-fg-muted">
-            {OWNER} · {TITLE}
+            {MARCA}
           </p>
         </div>
         <div className="hidden items-center gap-3 md:flex">
@@ -166,7 +202,7 @@ function NexusShell() {
           </main>
         </div>
 
-        {view !== "banca" && view !== "apy" ? (
+        {view !== "banca" && view !== "apy" && view !== "testimonio" ? (
           <div className="hidden w-72 shrink-0 xl:block">
             <LiveRail />
           </div>
@@ -263,5 +299,7 @@ function ViewBody({ view }: { view: NexusView }) {
       return <BancaView />;
     case "apy":
       return <ApyFastView />;
+    case "testimonio":
+      return <TestimonioView />;
   }
 }

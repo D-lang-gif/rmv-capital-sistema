@@ -7,14 +7,17 @@ import {
   Send,
   Server,
   Smartphone,
+  Users,
 } from "lucide-react";
-import { LEMA_BANCO, NOMBRE_BANCO, TITULAR, VERSION_BANCO } from "@/lib/banca/datos";
+import { FIRMA_BANCA, FRASE_BANCA, LEMA_BANCO, NOMBRE_BANCO, VERSION_BANCO } from "@/lib/banca/datos";
 import { useBancaStore, type BancaTab } from "@/lib/banca/store";
+import { useNexusStore } from "@/lib/nexus/store";
 import { cn } from "@/lib/utils";
 import { Dashboard } from "./dashboard";
 import { Pagos, Recargas, Spei, Tarjetas } from "./operaciones";
 import { Certificados, Token } from "./extras";
 import { Servidor } from "./servidor";
+import { Usuarios } from "./usuarios";
 
 const TABS: Array<{ id: BancaTab; label: string; icon: typeof Send }> = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -24,12 +27,15 @@ const TABS: Array<{ id: BancaTab; label: string; icon: typeof Send }> = [
   { id: "recargas", label: "Recargas", icon: Smartphone },
   { id: "token", label: "Token", icon: KeyRound },
   { id: "certificados", label: "Certificados", icon: Award },
+  { id: "usuarios", label: "Usuarios", icon: Users },
   { id: "servidor", label: "Servidor", icon: Server },
 ];
 
 export function BancaView() {
   const tab = useBancaStore((s) => s.tab);
   const setTab = useBancaStore((s) => s.setTab);
+  const esAdmin = useNexusStore((s) => s.rol) === "admin";
+  const tabs = TABS.filter((t) => t.id !== "usuarios" || esAdmin);
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">
@@ -43,11 +49,11 @@ export function BancaView() {
             <span className="text-fg-muted"> · {LEMA_BANCO}</span>
           </h1>
         </div>
-        <p className="text-xs tracking-[0.18em] text-fg-subtle uppercase">{TITULAR}</p>
+        <p className="text-xs tracking-[0.18em] text-fg-subtle uppercase">{FIRMA_BANCA}</p>
       </header>
 
       <div role="tablist" aria-label="Secciones de banca" className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1">
-        {TABS.map((t) => {
+        {tabs.map((t) => {
           const active = t.id === tab;
           return (
             <button
@@ -79,14 +85,15 @@ export function BancaView() {
         {tab === "recargas" && <Recargas />}
         {tab === "token" && <Token />}
         {tab === "certificados" && <Certificados />}
+        {tab === "usuarios" && esAdmin && <Usuarios />}
         {tab === "servidor" && <Servidor />}
       </div>
 
       <footer className="mt-4 border-t border-border pt-4 text-center">
         <p className="text-xs font-medium tracking-[0.14em] text-fg-muted">
-          RMV Capital Bank © 2026 · RAÚL MUÑOZ VILLA
+          RMV Capital Bank © 2026 · {FIRMA_BANCA.toUpperCase()}
         </p>
-        <p className="mt-1 text-[10px] text-fg-subtle">Prototipo · operaciones registradas localmente</p>
+        <p className="mt-1 text-[11px] text-fg-muted italic">{FRASE_BANCA}</p>
       </footer>
     </div>
   );
