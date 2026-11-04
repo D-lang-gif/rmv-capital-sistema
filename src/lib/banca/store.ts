@@ -25,7 +25,8 @@ export type BancaTab =
   | "token"
   | "certificados"
   | "servidor"
-  | "usuarios";
+  | "usuarios"
+  | "pasarela";
 
 type BancaState = {
   tab: BancaTab;

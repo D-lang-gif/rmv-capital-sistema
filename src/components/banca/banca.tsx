@@ -8,6 +8,7 @@ import {
   Server,
   Smartphone,
   Users,
+  Vault,
 } from "lucide-react";
 import { FIRMA_BANCA, FRASE_BANCA, LEMA_BANCO, NOMBRE_BANCO, VERSION_BANCO } from "@/lib/banca/datos";
 import { useBancaStore, type BancaTab } from "@/lib/banca/store";
@@ -18,6 +19,7 @@ import { Pagos, Recargas, Spei, Tarjetas } from "./operaciones";
 import { Certificados, Token } from "./extras";
 import { Servidor } from "./servidor";
 import { Usuarios } from "./usuarios";
+import { PasarelaConciliacion } from "./pasarela";
 
 const TABS: Array<{ id: BancaTab; label: string; icon: typeof Send }> = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -28,6 +30,7 @@ const TABS: Array<{ id: BancaTab; label: string; icon: typeof Send }> = [
   { id: "token", label: "Token", icon: KeyRound },
   { id: "certificados", label: "Certificados", icon: Award },
   { id: "usuarios", label: "Usuarios", icon: Users },
+  { id: "pasarela", label: "Pasarela y conciliación", icon: Vault },
   { id: "servidor", label: "Servidor", icon: Server },
 ];
 
@@ -35,7 +38,8 @@ export function BancaView() {
   const tab = useBancaStore((s) => s.tab);
   const setTab = useBancaStore((s) => s.setTab);
   const esAdmin = useNexusStore((s) => s.rol) === "admin";
-  const tabs = TABS.filter((t) => t.id !== "usuarios" || esAdmin);
+  // "Usuarios" y "Pasarela y conciliación" son exclusivos del soberano.
+  const tabs = TABS.filter((t) => (t.id !== "usuarios" && t.id !== "pasarela") || esAdmin);
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">
@@ -86,6 +90,7 @@ export function BancaView() {
         {tab === "token" && <Token />}
         {tab === "certificados" && <Certificados />}
         {tab === "usuarios" && esAdmin && <Usuarios />}
+        {tab === "pasarela" && esAdmin && <PasarelaConciliacion />}
         {tab === "servidor" && <Servidor />}
       </div>
 

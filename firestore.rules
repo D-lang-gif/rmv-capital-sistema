@@ -71,6 +71,12 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // ── soberano/**: Pasarela y conciliación (solo el administrador) ──
+    // soberano/pasarela/operaciones/{folio}, soberano/bancomer/estados/{id}, soberano/atm/movimientos/{id}
+    match /soberano/{ruta=**} {
+      allow read, write: if esAdmin();
+    }
+
     // Todo lo demás: denegado.
     match /{todo=**} {
       allow read, write: if false;
