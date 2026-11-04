@@ -111,7 +111,9 @@ export function Movimientos({ limite }: { limite?: number }) {
       ["Movimientos", String(movs.length)],
       ["Saldo", `vuelve a ${fmtMXN(SALDOS.mxn)}`],
     ]);
-    if (ok) reiniciar();
+    if (ok) {
+      reiniciar(); // los usuarios internos viven en la nube y no se borran aquí
+    }
   }
 
   return (
