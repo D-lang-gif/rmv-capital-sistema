@@ -31,6 +31,34 @@ export function limpiarClave(clave: string): string {
     .trim();
 }
 
+function bytesToB64(b: Uint8Array): string {
+  return btoa(String.fromCharCode(...b));
+}
+
+/** PBKDF2-SHA256 (mismas iteraciones que la credencial principal) → hex. */
+export async function derivarHash(claveEscrita: string, salB64: string, iteraciones = CREDENCIAL.iteraciones): Promise<string> {
+  if (typeof crypto === "undefined" || !crypto.subtle) throw new Error("sin-webcrypto");
+  const llave = await crypto.subtle.importKey("raw", new TextEncoder().encode(limpiarClave(claveEscrita)), "PBKDF2", false, ["deriveBits"]);
+  const bits = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", hash: "SHA-256", salt: b64ToBytes(salB64), iterations: iteraciones },
+    llave,
+    256,
+  );
+  return toHex(bits);
+}
+
+export type CredencialLocal = { sal: string; hash: string; iteraciones: number };
+
+/** Genera sal aleatoria + hash. Nunca se guarda la contraseña en claro. */
+export async function crearCredencial(clave: string): Promise<CredencialLocal> {
+  const sal = bytesToB64(crypto.getRandomValues(new Uint8Array(16)));
+  return { sal, hash: await derivarHash(clave, sal), iteraciones: CREDENCIAL.iteraciones };
+}
+
+export async function verificarCredencial(clave: string, c: CredencialLocal): Promise<boolean> {
+  return igual(await derivarHash(clave, c.sal, c.iteraciones), c.hash);
+}
+
 export async function verificarAcceso(usuario: string, claveEscrita: string): Promise<boolean> {
   const clave = limpiarClave(claveEscrita);
   if (typeof crypto === "undefined" || !crypto.subtle) {
