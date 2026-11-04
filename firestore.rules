@@ -1,0 +1,79 @@
+rules_version = '2';
+// RMV Capital Bank · Banca Soberana — reglas de Firestore.
+// Publicar: Firebase Console › Firestore Database › Reglas (pegar y "Publicar"),
+// o `firebase deploy --only firestore:rules` (requiere firebase login).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function dentro() { return request.auth != null; }
+    function esSoberano() {
+      return dentro() && request.auth.token.email == 'soberano@rmv-banca-soberana.firebaseapp.com';
+    }
+    // Administrador = el uid guardado en config/admin (se escribe una sola vez y nunca cambia).
+    function esAdmin() {
+      return dentro() && exists(/databases/$(database)/documents/config/admin)
+        && get(/databases/$(database)/documents/config/admin).data.uid == request.auth.uid;
+    }
+    function perfilActivo() {
+      return dentro() && exists(/databases/$(database)/documents/usuarios/$(request.auth.uid))
+        && get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.estado == 'activa';
+    }
+
+    // ── config/admin: arranque del administrador ──
+    // Solo la cuenta soberano@… puede crearlo, solo con su propio uid y solo si aún no existe
+    // ("create" no aplica sobre un documento existente). Después es inmutable.
+    match /config/admin {
+      allow read: if esAdmin() || esSoberano();
+      allow create: if esSoberano()
+        && request.resource.data.keys().hasOnly(['uid', 'creadoEn'])
+        && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if false;
+    }
+    match /config/{otro} {
+      allow read, write: if esAdmin() && otro != 'admin';
+    }
+
+    // ── usuarios/{uid} ──
+    match /usuarios/{uid} {
+      allow read: if esAdmin() || (dentro() && request.auth.uid == uid);
+      // El admin crea su propio perfil (rol admin) y los de los demás (siempre rol usuario).
+      allow create: if esAdmin()
+        && request.resource.data.estado in ['activa', 'baja']
+        && ((uid == request.auth.uid && request.resource.data.rol == 'admin')
+            || (uid != request.auth.uid && request.resource.data.rol == 'usuario'));
+      // El admin puede editar a otros, pero nunca cambiar el rol (nadie se vuelve admin por aquí).
+      // El usuario solo puede apagar su propia bandera de "debe cambiar contraseña".
+      allow update: if (esAdmin() && uid != request.auth.uid
+                         && request.resource.data.rol == resource.data.rol
+                         && request.resource.data.estado in ['activa', 'baja'])
+        || (dentro() && uid == request.auth.uid && resource.data.estado == 'activa'
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['debeCambiarClave'])
+            && request.resource.data.debeCambiarClave == false);
+      allow delete: if false;
+    }
+
+    // ── cuentas/{id} (tarjeta incrustada) ──
+    match /cuentas/{id} {
+      allow read: if esAdmin() || (perfilActivo() && resource.data.uid == request.auth.uid);
+      allow create: if esAdmin()
+        && request.resource.data.saldo is number && request.resource.data.saldo == 0
+        && exists(/databases/$(database)/documents/usuarios/$(request.resource.data.uid));
+      allow update: if esAdmin()
+        && request.resource.data.saldo is number && request.resource.data.saldo >= 0
+        && request.resource.data.uid == resource.data.uid;
+      allow delete: if false;
+    }
+
+    // ── movimientos/{id}: libro inmutable ──
+    match /movimientos/{id} {
+      allow read: if esAdmin() || (perfilActivo() && resource.data.uid == request.auth.uid);
+      allow create: if esAdmin() && request.resource.data.monto is number;
+      allow update, delete: if false;
+    }
+
+    // Todo lo demás: denegado.
+    match /{todo=**} {
+      allow read, write: if false;
+    }
+  }
+}
