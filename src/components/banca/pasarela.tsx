@@ -1,6 +1,6 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { onAuthStateChanged, type User } from "firebase/auth";
-import { Banknote, CheckCircle2, Clock, Eye, EyeOff, FileUp, Landmark, ListChecks, Lock, Plus, RefreshCw, Sigma, Vault, Wallet } from "lucide-react";
+import { Banknote, CheckCircle2, Clock, Eye, EyeOff, FileUp, Landmark, ListChecks, Lock, Plus, RefreshCw, Send, Sigma, Vault, Wallet } from "lucide-react";
 import { auth } from "@/lib/firebase/app";
 import { fmtFecha, fmtMXN } from "@/lib/banca/formato";
 import { popupAviso } from "@/lib/banca/popup";
@@ -14,12 +14,14 @@ import {
 import { cn } from "@/lib/utils";
 import { BotonShimmer, Campo, Card, Titulo, inputCls } from "./ui";
 import { BadgeSoberana } from "./usuarios";
+import { StpSpei } from "./stp";
 
 /* Banca Soberana · Pasarela y conciliación (solo "soberano"). */
 
-type Vista = "pasarela" | "bancomer" | "atm";
+type Vista = "pasarela" | "stp" | "bancomer" | "atm";
 const VISTAS: Array<{ id: Vista; label: string; icon: typeof Wallet }> = [
   { id: "pasarela", label: "Pasarela de pagos", icon: Wallet },
+  { id: "stp", label: "STP / SPEI", icon: Send },
   { id: "bancomer", label: "Estado de cuenta Bancomer", icon: Landmark },
   { id: "atm", label: "Movimientos ATM", icon: Banknote },
 ];
@@ -57,6 +59,8 @@ export function PasarelaConciliacion() {
         </Card>
       ) : vista === "pasarela" ? (
         <Pasarela />
+      ) : vista === "stp" ? (
+        <StpSpei />
       ) : vista === "bancomer" ? (
         <Bancomer />
       ) : (
