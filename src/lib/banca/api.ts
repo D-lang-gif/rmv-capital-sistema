@@ -3,11 +3,31 @@
  * APAGADO por defecto: no se hace ninguna consulta hasta que el usuario
  * activa "Conectar con mi servidor" en Banca → Servidor.
  * Si el servidor no responde, la Banca sigue en modo local.
- * Dirección por defecto: VITE_RMV_API_URL o http://127.0.0.1:5001
+ * Dirección por defecto: VITE_RMV_API_URL o el túnel de producción Cloudflare.
  */
 const CLAVE_URL = "rmv-api-url";
 const CLAVE_TOKEN = "rmv-api-token";
 const CLAVE_ACTIVA = "rmv-api-activa";
+
+/** Túnel público de producción (cloudflared). Sustituye localhost / IP de pruebas. */
+export const URL_PRODUCCION_CF =
+  "https://prev-oops-luke-targets.trycloudflare.com";
+
+const URLS_LEGACY = [
+  "http://127.0.0.1:5001",
+  "http://localhost:5001",
+  "https://127.0.0.1:5001",
+  "https://localhost:5001",
+  "http://10.24.85.184:5001",
+  "http://10.24.85.184",
+  "https://10.24.85.184:5001",
+];
+
+function esUrlLegacy(u: string): boolean {
+  const limpia = u.replace(/\/+$/, "");
+  if (URLS_LEGACY.includes(limpia)) return true;
+  return /127\.0\.0\.1:5001|localhost:5001|10\.24\.85\.184/.test(limpia);
+}
 
 /** ¿El usuario activó la conexión con su servidor? (por defecto: no) */
 export function apiActiva(): boolean {
@@ -27,11 +47,16 @@ export function guardarApiActiva(activa: boolean) {
 }
 
 export const API_POR_DEFECTO =
-  (import.meta.env.VITE_RMV_API_URL as string | undefined) || "http://127.0.0.1:5001";
+  (import.meta.env.VITE_RMV_API_URL as string | undefined) || URL_PRODUCCION_CF;
 
 export function urlApi(): string {
   try {
-    return localStorage.getItem(CLAVE_URL) || API_POR_DEFECTO;
+    const guardada = localStorage.getItem(CLAVE_URL);
+    if (!guardada || esUrlLegacy(guardada)) {
+      localStorage.setItem(CLAVE_URL, URL_PRODUCCION_CF);
+      return URL_PRODUCCION_CF;
+    }
+    return guardada;
   } catch {
     return API_POR_DEFECTO;
   }

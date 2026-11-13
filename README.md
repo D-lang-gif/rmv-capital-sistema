@@ -90,9 +90,10 @@ sh iniciar_local.sh
 
 ### Conectar el sitio publicado con tu API
 
-1. Arranca la API en el mismo equipo donde abres el navegador, permitiendo el origen del sitio:
-   `export RMV_CORS_ORIGINS=https://d-lang-gif.github.io` (en PowerShell: `$env:RMV_CORS_ORIGINS = "https://d-lang-gif.github.io"`).
-2. En el sitio: Banca → Servidor → escribe la dirección (por defecto `http://127.0.0.1:5001`) →
+1. Arranca la API en Termux y publícala con el túnel de Cloudflare (`cloudflared tunnel --url http://127.0.0.1:5000`).
+   En `.env.produccion` deja `RMV_CORS_ORIGINS=*` (o al menos `https://d-lang-gif.github.io`).
+2. En el sitio: Banca → Servidor → confirma la dirección de producción
+   (`https://prev-oops-luke-targets.trycloudflare.com`; ya no uses `127.0.0.1:5001` ni `10.24.85.184`) →
    **Conectar con mi servidor** → entra con el usuario de la API.
 3. Para volver al modo local: **Desconectar**.
 

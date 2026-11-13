@@ -64,15 +64,18 @@ function ServidorApagado({ onActivar }: { onActivar: () => void }) {
           <p className="flex gap-2">
             <Smartphone className="mt-0.5 size-4 shrink-0 text-accent" />
             <span>
-              La <b className="text-fg">API MAESTRA</b> (Flask) no está en internet: corre en tu teléfono (Termux) o en
-              tu PC, en <code className="font-mono text-xs">http://127.0.0.1:5001</code>. Las instrucciones están en
-              el README del repositorio, carpeta <code className="font-mono text-xs">api/</code>.
+              La <b className="text-fg">API MAESTRA</b> (Flask) corre en tu teléfono (Termux) y se publica por el
+              túnel de Cloudflare. Dirección de producción:{" "}
+              <code className="font-mono text-xs">https://prev-oops-luke-targets.trycloudflare.com</code>. Las
+              instrucciones están en el README del repositorio, carpeta{" "}
+              <code className="font-mono text-xs">api/</code>.
             </span>
           </p>
           <p>
-            Si la tienes encendida en este mismo equipo, escribe su dirección y pulsa «Conectar con mi servidor».
-            Para usarla desde esta página publicada, arráncala con{" "}
-            <code className="font-mono text-xs">RMV_CORS_ORIGINS=https://d-lang-gif.github.io</code>.
+            Si el túnel está encendido, confirma esa dirección y pulsa «Conectar con mi servidor». Para que el
+            panel de GitHub Pages conecte sin bloqueo, usa{" "}
+            <code className="font-mono text-xs">RMV_CORS_ORIGINS=*</code> (o al menos{" "}
+            <code className="font-mono text-xs">https://d-lang-gif.github.io</code>).
           </p>
         </div>
         <form
