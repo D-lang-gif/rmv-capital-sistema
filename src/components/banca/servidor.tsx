@@ -66,7 +66,7 @@ function ServidorApagado({ onActivar }: { onActivar: () => void }) {
             <span>
               La <b className="text-fg">API MAESTRA</b> (Flask) corre en tu teléfono (Termux) y se publica por el
               túnel de Cloudflare. Dirección de producción:{" "}
-              <code className="font-mono text-xs">https://prev-oops-luke-targets.trycloudflare.com</code>. Las
+              <code className="font-mono text-xs">https://roulette-rhythm-kurt-showed.trycloudflare.com</code>. Las
               instrucciones están en el README del repositorio, carpeta{" "}
               <code className="font-mono text-xs">api/</code>.
             </span>

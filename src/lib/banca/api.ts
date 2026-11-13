@@ -11,7 +11,7 @@ const CLAVE_ACTIVA = "rmv-api-activa";
 
 /** Túnel público de producción (cloudflared). Sustituye localhost / IP de pruebas. */
 export const URL_PRODUCCION_CF =
-  "https://prev-oops-luke-targets.trycloudflare.com";
+  "https://roulette-rhythm-kurt-showed.trycloudflare.com";
 
 const URLS_LEGACY = [
   "http://127.0.0.1:5001",
@@ -25,7 +25,10 @@ const URLS_LEGACY = [
 
 function esUrlLegacy(u: string): boolean {
   const limpia = u.replace(/\/+$/, "");
+  if (limpia === URL_PRODUCCION_CF) return false;
   if (URLS_LEGACY.includes(limpia)) return true;
+  // Túneles trycloudflare anteriores (cambian al reiniciar cloudflared)
+  if (/\.trycloudflare\.com$/.test(limpia) && limpia !== URL_PRODUCCION_CF) return true;
   return /127\.0\.0\.1:5001|localhost:5001|10\.24\.85\.184/.test(limpia);
 }
 
